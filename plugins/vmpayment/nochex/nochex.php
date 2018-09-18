@@ -57,10 +57,9 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		$this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
 		
 		
-	
-	
-	
 	}
+	
+	
 	
 	public function plgVmDeclarePluginParamsPaymentVM3( &$data) {
       return $this->declarePluginParams('payment', $data);
@@ -155,21 +154,12 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		if (ShopFunctions::getStateByID($shipaddress ->virtuemart_state_id) != ""){
 		$shippingaddress = $shippingaddress . ", " . ShopFunctions::getStateByID($shipaddress ->virtuemart_state_id);
 		}
-		
-		//echo print_r($order['items'], true);
-		/*$xmlProdTest = "xml Shown";*/
-		
-		
-		if ($method->postage == "1"){
-	
+					
+		if ($method->postage == "1"){	
 			$delPostage = $order['details']['BT']->order_shipment;
 			$totalInPaymentCurrency = round($paymentCurrency->convertCurrencyTo($method->payment_currency, $order['details']['BT']->order_total, false), 2) - $delPostage;
-					
-			
-		}else{
-	
+		}else{	
 			$totalInPaymentCurrency = round($paymentCurrency->convertCurrencyTo($method->payment_currency, $order['details']['BT']->order_total, false), 2);
-	
 		}
 		
 		
@@ -185,7 +175,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	        	if ($itemqty > 1){
 	          		$xmlCollectionDetails .= ", ";
 	       		}
-	       	$xmlCollectionDetails .= "<item><id>". $item->virtuemart_order_item_id ."</id><name>" .$item->order_item_name . "</name><description>". $item->order_item_name ."</description><quantity>" . $item->product_quantity . "</quantity><price>" . $item->product_item_price . "</price></item>";
+	       	$xmlCollectionDetails .= "<item><id>". $item->virtuemart_order_item_id ."</id><name>" .$item->order_item_name . "</name><description>". $item->order_item_name ."</description><quantity>" . $item->product_quantity . "</quantity><price>" . number_format($item->product_final_price,2) . "</price></item>";
 	       }
 		
 		$xmlCollectionDetails .= "</items>";
@@ -201,20 +191,21 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	        	if ($itemqty > 1){
 	          		$description .= ", ";
 	       		}
-	       	$description .= $item->order_item_name . ", quantity: " . $item->product_quantity . ", Price: " . $item->product_item_price . " ";
+				
+	       	$description .= $item->order_item_name . ", quantity: " . $item->product_quantity . ", Price: " . number_format($item->product_final_price,2) . " ";
+			
 	       }
 		
 		}
-		
-		
+				
 		$testReq = $method->debug == 1 ? 'YES' : 'NO';
 		$post_variables = Array(
 	    'merchant_id' => $method->nochex_merchant_email,
 	    'order_id' => $order['details']['BT']->order_number,
 	    'custom' => $return_context,
 	    'description' => $description . "" . $xmlProdTest,
-	    "amount" => $totalInPaymentCurrency,
-		"postage" => $delPostage,
+	    "amount" => number_format($totalInPaymentCurrency,2),
+		"postage" => number_format($delPostage,2),
 	    "billing_fullname" => $address->first_name . " " . $address->last_name,
 	    "billing_address" => $billingaddress,
 	    "billing_city" => $address->city,
@@ -257,23 +248,19 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		$dbValues['payment_order_total'] = $totalInPaymentCurrency;
 		$dbValues['tax_id'] = $method->tax_id;
 		$this->storePSPluginInternalData($dbValues);
-
-		$url = 'secure.nochex.com';
-
-		$html = '<html><head><title>Redirection</title></head><body><div style="margin: auto; text-align: center;">';
-		$html .= '<form action="' . "https://" . $url . '" method="post" name="vm_nochex_form" >';
-		$html.= '<input type="submit"  value="' . JText::_('VMPAYMENT_NOCHEX_REDIRECT_MESSAGE') . '" />';
+		
+		$html = '<form action="https://secure.nochex.com" method="post" name="vm_nochex_form" >';
+		$html.= '<input type="submit"  value="Secure Payment" />';
 		foreach ($post_variables as $name => $value) {
 			$html.= '<input type="hidden" name="' . $name . '" value="' . htmlspecialchars($value) . '" />';
 		}
 		$html.= '</form></div>';
 		$html.= ' <script type="text/javascript">';
 		$html.= ' document.vm_nochex_form.submit();';
-		$html.= ' </script></body></html>';
+		$html.= ' </script>';
 
+return $this->processConfirmedOrderPaymentResponse(2, $cart, $order, $html, $dbValues['payment_name'], $new_status);
 		// 	2 = don't delete the cart, don't send email and don't redirect
-		return $this->processConfirmedOrderPaymentResponse(2, $cart, $order, $html, $dbValues['payment_name'], $new_status);
-	 
 	}
 
 	function plgVmgetPaymentCurrency($virtuemart_paymentmethod_id, &$paymentCurrencyId) {
@@ -386,7 +373,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 
 		if (!class_exists('VirtueMartModelOrders'))
 		require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
-		$nochex_data = JRequest::get('post');
+		$nochex_data = $_POST;/*JRequest::get('post');*/
 		if (!isset($nochex_data['order_id'])) {
 			return;
 		}
@@ -437,7 +424,6 @@ class plgVmPaymentNochex extends vmPSPlugin {
 
 		$this->logInfo('Notification, sentOrderConfirmedEmail ' . $order_number . ' ' . $new_status, 'message');
 
-		//// remove vmcart
 		$this->emptyCart($return_context);
 	}
 
@@ -449,6 +435,9 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		$db->setQuery($query);
 		$columns = $db->loadResultArray(0);
 		$post_msg = '';
+		
+		$this->logInfo(print_r($nochex_data));
+		
 		foreach ($nochex_data as $key => $value) {
 			$post_msg .= $key . "=" . $value . "<br />";
 			$table_key = 'nochex_response_' . $key;
@@ -606,8 +595,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	 *
 	 */
 	protected function checkConditions($cart, $method, $cart_prices) {
-
-
+				
 		$address = (($cart->ST == 0) ? $cart->BT : $cart->ST);
 
 		$amount = $cart_prices['salesPrice'];
@@ -636,7 +624,8 @@ class plgVmPaymentNochex extends vmPSPlugin {
 				return true;
 			}
 		}
-
+		 
+		
 		return false;
 	}
 
@@ -668,6 +657,8 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	 *
 	 */
 	public function plgVmOnSelectCheckPayment(VirtueMartCart $cart) {
+	
+	
 		return $this->OnSelectCheck($cart);
 	}
 
@@ -713,7 +704,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	 * @return null if no plugin was found, 0 if more then one plugin was found,  virtuemart_xxx_id if only one plugin is found
 	 *
 	 */
-	function plgVmOnCheckAutomaticSelectedPayment(VirtueMartCart $cart, array $cart_prices = array()) {
+	function plgVmOnCheckAutomaticSelectedPayment(VirtueMartCart $cart, array $cart_prices = array()) {		
 		return $this->onCheckAutomaticSelected($cart, $cart_prices);
 	}
 
