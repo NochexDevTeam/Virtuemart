@@ -13,6 +13,11 @@ Visit our Knowledgebase for support: https://support.nochex.com/
 Changelog
 =====================
 
+= 2.1.1 =
+    
+    + Bug fix for broken array (APC function)
+    + Table of information update on orders admin section
+
 = 2.1 =
 
     + Amount formatting
