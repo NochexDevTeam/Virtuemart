@@ -154,7 +154,9 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		if (ShopFunctions::getStateByID($shipaddress ->virtuemart_state_id) != ""){
 		$shippingaddress = $shippingaddress . ", " . ShopFunctions::getStateByID($shipaddress ->virtuemart_state_id);
 		}
-					
+		
+		/*print_r($order['details']['BT']);*/
+			
 		if ($method->postage == "1"){	
 			$delPostage = $order['details']['BT']->order_shipment;
 			$totalInPaymentCurrency = round($paymentCurrency->convertCurrencyTo($method->payment_currency, $order['details']['BT']->order_total, false), 2) - $delPostage;
@@ -222,11 +224,10 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	    );
 
 	    	// If in test mode add test parameters
-	    	if ($method->test_mode == "1"){
+	    if ($method->test_mode == "1"){
 			$post_variables['test_transaction'] = '100';
 			$post_variables['test_success_url'] = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id);
-			}
-		else {
+		} else {
 			$post_variables['success_url'] = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id);
 		}
 
@@ -235,7 +236,6 @@ class plgVmPaymentNochex extends vmPSPlugin {
 			$post_variables['hide_billing_details'] = 'true';
 		}
 		
-	    	
 
 		// Prepare data that should be stored in the database
 		$dbValues['order_number'] = $order['details']['BT']->order_number;
@@ -249,7 +249,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		$dbValues['tax_id'] = $method->tax_id;
 		$this->storePSPluginInternalData($dbValues);
 		
-		$html = '<form action="https://secure.nochex.com" method="post" name="vm_nochex_form" >';
+		$html = '<form action="https://secure.nochex.com/default.aspx" method="post" name="vm_nochex_form" >';
 		$html.= '<input type="submit"  value="Secure Payment" />';
 		foreach ($post_variables as $name => $value) {
 			$html.= '<input type="hidden" name="' . $name . '" value="' . htmlspecialchars($value) . '" />';
@@ -259,8 +259,8 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		$html.= ' document.vm_nochex_form.submit();';
 		$html.= ' </script>';
 
-return $this->processConfirmedOrderPaymentResponse(2, $cart, $order, $html, $dbValues['payment_name'], $new_status);
-		// 	2 = don't delete the cart, don't send email and don't redirect
+		return $this->processConfirmedOrderPaymentResponse(2, $cart, $order, $html, $dbValues['payment_name'], $new_status);
+		
 	}
 
 	function plgVmgetPaymentCurrency($virtuemart_paymentmethod_id, &$paymentCurrencyId) {
@@ -431,21 +431,13 @@ return $this->processConfirmedOrderPaymentResponse(2, $cart, $order, $html, $dbV
 
 		// Return the APC fields from the DB table and update them using the return POST parameters from APC
 		$db = JFactory::getDBO();
-		$query = 'SHOW COLUMNS FROM `' . $this->_tablename . '` ';
+		$query = 'SELECT COLUMN_NAME FROM `' . $this->_tablename . '` ';
 		$db->setQuery($query);
 		$columns = $db->loadResultArray(0);
 		$post_msg = '';
 		
 		$this->logInfo(print_r($nochex_data));
 		
-		foreach ($nochex_data as $key => $value) {
-			$post_msg .= $key . "=" . $value . "<br />";
-			$table_key = 'nochex_response_' . $key;
-			if (in_array($table_key, $columns)) {
-				$response_fields[$table_key] = $value;
-			}
-		}
-
 		$response_fields['payment_name'] = $this->renderPluginName($method);
 		$response_fields['nochexresponse_raw'] = $post_msg;
 		$return_context = $nochex_data['custom'];
@@ -480,23 +472,11 @@ return $this->processConfirmedOrderPaymentResponse(2, $cart, $order, $html, $dbV
 		if (!($paymentTable = $this->_getNochexInternalData($virtuemart_order_id) )) {
 			return '';
 		}
-		$this->getPaymentCurrency($paymentTable);
-		$q = 'SELECT `currency_code_3` FROM `#__virtuemart_currencies` WHERE `virtuemart_currency_id`="' . $paymentTable->payment_currency . '" ';
-		$db = JFactory::getDBO();
 		
-		$db->setQuery($q);
-		$currency_code_3 = $db->loadResult();
-		$html = '<table class="adminlist">' . "\n";
-		$html .=$this->getHtmlHeaderBE();
-		$html .= $this->getHtmlRowBE('NOCHEX_PAYMENT_NAME', $paymentTable->payment_name);
-
-		$code = "nochex_response_";
-		foreach ($paymentTable as $key => $value) {
-			if (substr($key, 0, strlen($code)) == $code) {
-				$html .= $this->getHtmlRowBE($key, $value);
-			}
-		}
+		$html = '<style>.vmCartPaymentLogo img{ height: 35px; width: auto!important; max-width: inherit!important; }</style><table class="adminlist" style="float: none;width: 200px;margin: auto;">' . $this->getHtmlHeaderBE();
+		$html .= '<tr><td>'.$paymentTable->payment_name.'</td></tr>';
 		$html .= '</table>' . "\n";
+		
 		return $html;
 	}
 
