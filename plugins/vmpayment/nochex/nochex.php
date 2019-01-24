@@ -161,6 +161,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 			$delPostage = $order['details']['BT']->order_shipment;
 			$totalInPaymentCurrency = round($paymentCurrency->convertCurrencyTo($method->payment_currency, $order['details']['BT']->order_total, false), 2) - $delPostage;
 		}else{	
+			$delPostage = "";
 			$totalInPaymentCurrency = round($paymentCurrency->convertCurrencyTo($method->payment_currency, $order['details']['BT']->order_total, false), 2);
 		}
 		
@@ -184,7 +185,8 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		$description = "Order created for - " . $order['details']['BT']->order_number;
 		
 		}else{
-		
+			
+		$xmlCollectionDetails = "";
 		// Get the products ordered and their quantity for the description parameter
 		$description = '';
 	    	$itemqty = 0;
@@ -205,9 +207,9 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	    'merchant_id' => $method->nochex_merchant_email,
 	    'order_id' => $order['details']['BT']->order_number,
 	    'custom' => $return_context,
-	    'description' => $description . "" . $xmlProdTest,
+	    'description' => $description,
 	    "amount" => number_format($totalInPaymentCurrency,2),
-		"postage" => number_format($delPostage,2),
+	    "postage" => number_format($delPostage,2),
 	    "billing_fullname" => $address->first_name . " " . $address->last_name,
 	    "billing_address" => $billingaddress,
 	    "billing_city" => $address->city,
