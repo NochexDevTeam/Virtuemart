@@ -127,7 +127,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		$vendorModel->addImages($vendor, 1);
 		$this->getPaymentCurrency($method);
 		$q = 'SELECT `currency_code_3` FROM `#__virtuemart_currencies` WHERE `virtuemart_currency_id`="' . $method->payment_currency . '" ';
-		$db = &JFactory::getDBO();
+		$db = JFactory::getDBO();
 		$db->setQuery($q);
 		$currency_code_3 = $db->loadResult();
 
