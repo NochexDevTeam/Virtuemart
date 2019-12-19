@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension version="2.5" type="plugin" group="vmpayment" >
     <name>VMPAYMENT_NOCHEX</name>
-    <creationDate>March 2015</creationDate>
+    <creationDate>December 2019</creationDate>
     <author>Nochex LTD</author>
     <authorUrl>http://www.nochex.com</authorUrl>
     <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
@@ -22,10 +22,6 @@
 	<fields name="params">
     <fieldset name="basic" addpath="/administrator/components/com_virtuemart/fields">
 	
-	<!--<field type="vmjpluginwarning" />
- 	<field type="spacer" default="VMPAYMENT_NOCHEX_PAYMENT_TITLE" level="level1" />
-	<field type="spacer" default="VMPAYMENT_NOCHEX_PAYMENT_WARNING"   /> -->
-
 	<field type="spacer" default="" level="level1" />
 	<field type="spacer" default="VMPAYMENT_NOCHEX_PAYMENT_SETTINGS" level="level1" />
 	<field name="payment_logos" type="vmfiles" label="VMPAYMENT_NOCHEX_LOGOS"
@@ -38,8 +34,6 @@
 	<field type="spacer" default="VMPAYMENT_NOCHEX_PARAMS" level="level1" />
 	<field type="text" name="nochex_merchant_email"  size="50" label="VMPAYMENT_NOCHEX_EMAIL"
               description="VMPAYMENT_NOCHEX_EMAIL_DESC" />
-
-
 	<field name="test_mode" type="radio" label="VMPAYMENT_NOCHEX_TESTMODE" description="VMPAYMENT_NOCHEX_TESTMODE_DESC" >
 	    <option value="0">COM_VIRTUEMART_NO</option>
 	    <option value="1">COM_VIRTUEMART_YES</option>
@@ -59,16 +53,13 @@
 	<field name="xmlCollection" type="radio" label="VMPAYMENT_NOCHEX_XMLCOLLECTION" description="VMPAYMENT_NOCHEX_XMLCOLLECTION_DESC" >
 	    <option value="0">COM_VIRTUEMART_NO</option>
 	    <option value="1">COM_VIRTUEMART_YES</option>
-	</field>
-	
+	</field>	
 	<field type="spacer" default="" level="level1" />
-	<field type="spacer" default="VMPAYMENT_NOCHEX_PAYMENT_PAGE" level="level1" />
-	
+	<field type="spacer" default="VMPAYMENT_NOCHEX_PAYMENT_PAGE" level="level1" />	
 	<field name="status_pending" type="vmorderstate" scope="com_virtuemart" default="P" label="VMPAYMENT_NOCHEX_STATUS_PENDING" description="VMPAYMENT_NOCHEX_STATUS_PENDING_EXPLAIN" />
 	<field name="status_success" type="vmorderstate" scope="com_virtuemart" default="C" label="VMPAYMENT_NOCHEX_STATUS_SUCCESS" description="VMPAYMENT_NOCHEX_STATUS_SUCCESS_EXPLAIN" />
 	<field name="status_canceled" type="vmorderstate" scope="com_virtuemart" default="X" label="VMPAYMENT_NOCHEX_STATUS_FAILED" description="VMPAYMENT_NOCHEX_STATUS_FAILED_EXPLAIN" />
 	<field type="spacer" default="" level="level1" />
-	
 	
 </fieldset>
     </fields>
