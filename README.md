@@ -13,6 +13,11 @@ Visit our Knowledgebase for support: https://support.nochex.com/
 Changelog
 =====================
 
+= 3.0.0 =
+
+    + Compatibility updates and testing to our module for the latest version of Virtuemart
+    + Added Callback functionality
+    
 = 2.1.1 =
     
     + Bug fix for broken array (APC function)
