@@ -40,7 +40,6 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		'postage' => array('', 'int'),
 	    'send_delivery_address' => array('', 'int'),
 	    'payment_currency' => array('', 'int'),
-	    'payment_logos' => array('', 'char'),
 	    'debug' => array('', 'int'),
 	    'status_pending' => array('', 'char'),
 	    'status_success' => array('', 'char'),
@@ -106,7 +105,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		$session = JFactory::getSession();
 		$return_context = $session->getId();
 		$this->_debug = $method->debug;
-		$this->logInfo('plgVmConfirmedOrder order number: ' . $order['details']['BT']->order_number, 'message');
+		$this->debugLog('plgVmConfirmedOrder order number: ' . $order['details']['BT']->order_number, 'message', 'debug');
 
 		if (!class_exists('VirtueMartModelOrders'))
 		require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
@@ -207,6 +206,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	    'merchant_id' => $method->nochex_merchant_email,
 	    'order_id' => $order['details']['BT']->order_number,
 	    'custom' => $return_context,
+	    'optional_2' => "En",
 	    'description' => $description,
 	    "amount" => number_format($totalInPaymentCurrency,2),
 	    "postage" => number_format($delPostage,2),
@@ -221,18 +221,18 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		"xml_item_collection" => $xmlCollectionDetails,
 	    "email_address" => $order['details']['BT']->email,
 	    "customer_phone_number" => $address->phone_1,
-	    "callback_url" => JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginnotification&tmpl=component'),
-	    "cancel_url" => JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginUserPaymentCancel&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id),
+	    "callback_url" => JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginnotification&tmpl=component',
+	    "cancel_url" => JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginUserPaymentCancel&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id,
 	    );
 
 	    	// If in test mode add test parameters
 	    if ($method->test_mode == "1"){
 			$post_variables['test_transaction'] = '100';
-			$post_variables['test_success_url'] = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id);
+			$post_variables['test_success_url'] = JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id;
 		} else {
-			$post_variables['success_url'] = JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id);
+			$post_variables['success_url'] = JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id;
 		}
-
+		
 		// Hide Billing Details and Send Delivery Address Check
 		if ($method->hide_billing_details == "1"){
 			$post_variables['hide_billing_details'] = 'true';
@@ -280,8 +280,8 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	function plgVmOnPaymentResponseReceived(&$html) {
 
 		// the payment itself should send the parameter needed.
-		$virtuemart_paymentmethod_id = JRequest::getInt('pm', 0);
-		$order_number = JRequest::getVar('on', 0);
+		$virtuemart_paymentmethod_id = vRequest::getInt('pm', 0);
+		$order_R_number = vRequest::getVar('on', 0);
 		$vendorId = 0;
 		if (!($method = $this->getVmPluginMethod($virtuemart_paymentmethod_id))) {
 			return null; // Another method was selected, do nothing
@@ -296,7 +296,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		if (!class_exists('VirtueMartModelOrders'))
 		require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
 
-		$nochex_data = JRequest::get('post');
+		$nochex_data = vRequest::get('post');
 		$payment_name = $this->renderPluginName($method);
 
 		if (!empty($nochex_data)) {
@@ -316,8 +316,8 @@ class plgVmPaymentNochex extends vmPSPlugin {
 				$orderitems = $modelOrder->getOrder($virtuemart_order_id);
 				$nb_history = count($orderitems['history']);
 				if ($orderitems['history'][$nb_history - 1]->order_status_code != $order['order_status']) {
-					$this->_storeNochexInternalData($method, $nochex_data, $virtuemart_order_id);
-					$this->logInfo('plgVmOnPaymentResponseReceived, sentOrderConfirmedEmail ' . $order_number, 'message');
+					//$this->_storeNochexInternalData($method, $nochex_data, $virtuemart_order_id);
+					$this->debugLog('plgVmOnPaymentResponseReceived, sentOrderConfirmedEmail ' . $order_number, 'message', 'debug');
 					$order['virtuemart_order_id'] = $virtuemart_order_id;
 					$order['comments'] = JText::sprintf('VMPAYMENT_NOCHEX_EMAIL_SENT');
 					$modelOrder->updateStatusForOneOrder($virtuemart_order_id, $order, true);
@@ -329,11 +329,15 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		} else {
 			$virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber($order_number);
 		}
-		if (!($paymentTable = $this->_getNochexInternalData($virtuemart_order_id, $order_number) )) {
+		/*if (!($paymentTable = $this->_getNochexInternalData($virtuemart_order_id, $order_number) )) {
 			return '';
 		}
-		$html = $this->_getPaymentResponseHtml($paymentTable, $payment_name);
-
+		$html = $this->_getPaymentResponseHtml($paymentTable, $payment_name);*/
+		
+		$html = '<table>' . "\n";
+		$html .= '<tr><td>Order updated for '.$order_R_number.' </td></tr>';
+		$html .= '</table>' . "\n";
+		
 		//We delete the old stuff
 		// get the correct cart / session
 		$cart = VirtueMartCart::getCart();
@@ -346,7 +350,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		if (!class_exists('VirtueMartModelOrders'))
 		require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
 
-		$order_number = JRequest::getVar('on');
+		$order_number = vRequest::getVar('on');
 		if (!$order_number)
 		return false;
 		$db = JFactory::getDBO();
@@ -375,19 +379,21 @@ class plgVmPaymentNochex extends vmPSPlugin {
 
 		if (!class_exists('VirtueMartModelOrders'))
 		require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
-		$nochex_data = $_POST;/*JRequest::get('post');*/
+		$nochex_data = $_POST;/*vRequest::get('post');*/
+		//$this->debugLog('nochex_data ' . json_encode($nochex_data), 'message', 'debug');
 		if (!isset($nochex_data['order_id'])) {
 			return;
 		}
 		$order_number = $nochex_data['order_id'];
 		$virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber($nochex_data['order_id']);
-
+		$this->debugLog('1.' . $virtuemart_order_id,  'message', 'debug');
 		if (!$virtuemart_order_id) {
 			return;
 		}
 		$vendorId = 0;
 		$payment = $this->getDataByOrderId($virtuemart_order_id);
-
+		$this->debugLog('2.' . print_r($payment),  'message', 'debug');
+		
 		$method = $this->getVmPluginMethod($payment->virtuemart_paymentmethod_id);
 		if (!$this->selectedThisElement($method->payment_element)) {
 			return false;
@@ -395,57 +401,66 @@ class plgVmPaymentNochex extends vmPSPlugin {
 
 		$this->_debug = $method->debug;
 		if (!$payment) {
-			$this->logInfo('getDataByOrderId payment not found: exit ', 'ERROR');
+			$this->debugLog('getDataByOrderId payment not found: exit ', 'ERROR');
 			return null;
 		}
-		$this->logInfo('nochex_data ' . implode('   ', $nochex_data), 'message');
 
-		$this->_storeNochexInternalData($method, $nochex_data, $virtuemart_order_id);
-
-		$response = $this->_processAPC($nochex_data, $method, $virtuemart_order_id);
-		$this->logInfo('process APC ' . $error_msg, 'message');
+		//$response = $this->_processAPC($nochex_data, $method, $virtuemart_order_id);
+		
+		if(!empty($nochex_data['optional_2'])) {
+		
+			if($nochex_data['optional_2'] == "En" ){		
+				$response = $this->_processCallback($nochex_data, $method, $virtuemart_order_id);	
+				
+				$this->debugLog('process Callback ' . $response, 'message', 'debug');
+				if (!strstr($response, "AUTHORISED")) {
+					$new_status = $method->status_canceled;
+					$this->debugLog('process Callback ' . $response  . ' ' . $new_status, 'ERROR');
+					$transactionStatus = "Callback Declined";
+				} else {
+					$this->debugLog('process Callback OK', 'message', 'debug');
+					$transactionStatus = "Callback Authorised";
+				}
+		
+			} else {
+				$response = $this->_processAPC($nochex_data, $method, $virtuemart_order_id);	$this->debugLog('process APC ' . $response, 'message', 'debug');
 		if (!strstr($response, "AUTHORISED")) {
 			$new_status = $method->status_canceled;
-			$this->logInfo('process APC ' . $response  . ' ' . $new_status, 'ERROR');
+			$this->debugLog('process APC ' . $response  . ' ' . $new_status, 'ERROR');
+			$transactionStatus = "APC Declined";
 		} else {
-			$this->logInfo('process APC OK', 'message');
+			$this->debugLog('process APC OK', 'message', 'debug');
+			$transactionStatus = "APC Authorised";
 		}
-
+			}
+		
+		} else {	
+			$response = $this->_processAPC($nochex_data, $method, $virtuemart_order_id);	$this->debugLog('process APC ' . $response, 'message', 'debug');
+		if (!strstr($response, "AUTHORISED")) {
+			$new_status = $method->status_canceled;
+			$this->debugLog('process APC ' . $response  . ' ' . $new_status, 'ERROR');
+			$transactionStatus = "APC Declined";
+		} else {
+			$this->debugLog('process APC OK', 'message', 'debug');
+			$transactionStatus = "APC Authorised";
+		}
+		}
+		
 		$new_status = $this->_getPaymentStatus($method, $response);
 
-		$this->logInfo('plgVmOnPaymentNotification return new_status:' . $new_status, 'message');
+		$this->debugLog('plgVmOnPaymentNotification return new_status:' . $new_status, 'message', 'debug');
 
 		$modelOrder = VmModel::getModel('orders');
 
 		$order = array();
 		$order['order_status'] = $new_status;
 		$order['customer_notified'] =1;
-		$order['comments'] = JText::sprintf('VMPAYMENT_NOCHEX_PAYMENT_STATUS_CONFIRMED', $order_number);
-
+		$order['comments'] = "<ul style=\"text-align:left\"><li> Order ID: " . $nochex_data['order_id'] . "</li><li>Transaction ID: " . $nochex_data['transaction_id'] . "</li><li>Transaction Status: " . $transactionStatus . "</li></ul>";
 		$modelOrder->updateStatusForOneOrder($virtuemart_order_id, $order, true);
 
-		$this->logInfo('Notification, sentOrderConfirmedEmail ' . $order_number . ' ' . $new_status, 'message');
+		$this->debugLog('Notification, sentOrderConfirmedEmail ' . $order_number . ' ' . $new_status, 'message', 'debug');
 
 		$this->emptyCart($return_context);
-	}
-
-	function _storeNochexInternalData($method, $nochex_data, $virtuemart_order_id) {
-
-		// Return the APC fields from the DB table and update them using the return POST parameters from APC
-		$db = JFactory::getDBO();
-		$query = 'SELECT COLUMN_NAME FROM `' . $this->_tablename . '` ';
-		$db->setQuery($query);
-		$columns = $db->loadResultArray(0);
-		$post_msg = '';
-		
-		$this->logInfo(print_r($nochex_data));
-		
-		$response_fields['payment_name'] = $this->renderPluginName($method);
-		$response_fields['nochexresponse_raw'] = $post_msg;
-		$return_context = $nochex_data['custom'];
-		$response_fields['order_number'] = $nochex_data['order_id'];
-		$response_fields['virtuemart_order_id'] = $virtuemart_order_id;
-		$this->storePSPluginInternalData($response_fields, 'virtuemart_order_id', true);
 	}
 
 	function _getPaymentStatus($method, $nochex_status) {
@@ -462,43 +477,6 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	}
 
 	/**
-	 * Display stored payment data for an order
-	 * @see components/com_virtuemart/helpers/vmPSPlugin::plgVmOnShowOrderBEPayment()
-	 */
-	function plgVmOnShowOrderBEPayment($virtuemart_order_id, $payment_method_id) {
-
-		if (!$this->selectedThisByMethodId($payment_method_id)) {
-			return null; // Another method was selected, do nothing
-		}
-
-		if (!($paymentTable = $this->_getNochexInternalData($virtuemart_order_id) )) {
-			return '';
-		}
-		
-		$html = '<style>.vmCartPaymentLogo img{ height: 35px; width: auto!important; max-width: inherit!important; }</style><table class="adminlist" style="float: none;width: 200px;margin: auto;">' . $this->getHtmlHeaderBE();
-		$html .= '<tr><td>'.$paymentTable->payment_name.'</td></tr>';
-		$html .= '</table>' . "\n";
-		
-		return $html;
-	}
-
-	function _getNochexInternalData($virtuemart_order_id, $order_number='') {
-		$db = JFactory::getDBO();
-		$q = 'SELECT * FROM `' . $this->_tablename . '` WHERE ';
-		if ($order_number) {
-			$q .= " `order_number` = '" . $order_number . "'";
-		} else {
-			$q .= ' `virtuemart_order_id` = ' . $virtuemart_order_id;
-		}
-
-		$db->setQuery($q);
-		if (!($paymentTable = $db->loadObject())) {
-			return '';
-		}
-		return $paymentTable;
-	}
-
-	/**
 	 * Complete APC process 
 	 *
 	 * @param array $data
@@ -506,24 +484,25 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	 * @access protected
 	 */
 	function _processAPC($nochex_data, $method) {
+	
 		$secure_post = $method->secure_post;
 		$nochex_url = "www.nochex.com";
 
 		$post_msg = http_build_query($nochex_data);
-
-		// post back to PayPal system to validate
+		// post back to Nochex system to validate
 		$header = "POST /apcnet/apc.aspx HTTP/1.0\r\n";
 		$header .= "Host: www.nochex.com\r\n";
 		$header .= "Content-Type: application/x-www-form-urlencoded\r\n";
 		$header .= "Content-Length: " . strlen($post_msg) . "\r\n\r\n";
 
 		if ($secure_post) {
-			// If possible, securely post back to paypal using HTTPS
+			// If possible, securely post back to Nochex using HTTPS
 			// Your PHP server will need to be SSL enabled
 			$fps = fsockopen('ssl://' . $nochex_url, 443, $errno, $errstr, 30);
 		} else {
 			$fps = fsockopen($nochex_url, 80, $errno, $errstr, 30);
 		}
+
 
 		if (!$fps) {
 			$this->sendEmailToVendorAndAdmins("error with nochex", JText::sprintf('VMPAYMENT_NOCHEX_ERROR_POSTING_APC', $errstr, $errno));
@@ -532,7 +511,6 @@ class plgVmPaymentNochex extends vmPSPlugin {
 			fputs($fps, $header . $post_msg);
 			while (!feof($fps)) {
 				$res = fgets($fps, 1024);
-
 				if (strcmp($res, 'AUTHORISED') == 0) {
 					return 'AUTHORISED';
 				} elseif (strcmp($res, 'DECLINED') == 0) {
@@ -545,18 +523,51 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		fclose($fps);
 		return '';
 	}
+	
+	
+	/**
+	 * Complete Callback process 
+	 *
+	 * @param array $data
+	 * @return string DECLINED or AUTHORISED from Nochex server
+	 * @access protected
+	 */
+	
+	function _processCallback($nochex_data, $method) {
+	
+		$secure_post = $method->secure_post;
+		$nochex_url = "secure.nochex.com";
 
-	function _getPaymentResponseHtml($nochexTable, $payment_name) {
+		$post_msg = http_build_query($nochex_data);
+		// post back to Nochex system to validate
+		$header = "POST /callback/callback.aspx HTTP/1.0\r\n";
+		$header .= "Host: secure.nochex.com\r\n";
+		$header .= "Content-Type: application/x-www-form-urlencoded\r\n";
+		$header .= "Content-Length: " . strlen($post_msg) . "\r\n\r\n";
 
-		$html = '<table>' . "\n";
-		$html .= $this->getHtmlRow('NOCHEX_PAYMENT_NAME', $payment_name);
-		if (!empty($nochexTable)) {
-			$html .= $this->getHtmlRow('NOCHEX_ORDER_NUMBER', $nochexTable->order_number);
+		// Your PHP server will need to be SSL enabled
+		$fps = fsockopen('ssl://' . $nochex_url, 443, $errno, $errstr, 30);
+
+		if (!$fps) {
+			$this->sendEmailToVendorAndAdmins("error with nochex", JText::sprintf('VMPAYMENT_NOCHEX_ERROR_POSTING_APC', $errstr, $errno));
+			return JText::sprintf('VMPAYMENT_NOCHEX_ERROR_POSTING_APC', $errstr, $errno); // send email
+		} else {
+			fputs($fps, $header . $post_msg);
+			while (!feof($fps)) {
+				$res = fgets($fps, 1024);
+				if (strcmp($res, 'AUTHORISED') == 0) {
+					return 'AUTHORISED';
+				} elseif (strcmp($res, 'DECLINED') == 0) {
+					$this->sendEmailToVendorAndAdmins("error with nochex APC NOTIFICATION", JText::_('VMPAYMENT_NOCHEX_ERROR_APC_VALIDATION') . $res);
+					return 'DECLINED';
+				}
+			}
 		}
-		$html .= '</table>' . "\n";
 
-		return $html;
+		fclose($fps);
+		return '';
 	}
+ 
 
 	/**
 	 * We must reimplement this triggers for joomla 1.7
@@ -651,18 +662,6 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	}
 
 	/**
-	 * This event is fired during the checkout process. It can be used to validate the
-	 * method data as entered by the user.
-	 *
-	 * @return boolean True when the data was valid, false otherwise. If the plugin is not activated, it should return null.
-	 * @author Max Milbers
-
-	 public function plgVmOnCheckoutCheckDataPayment($psType, VirtueMartCart $cart) {
-	 return null;
-	 }
-	 */
-
-	/**
 	 * This method is fired when showing when priting an Order
 	 * It displays the the payment method-specific data.
 	 *
@@ -675,59 +674,6 @@ class plgVmPaymentNochex extends vmPSPlugin {
 		return $this->onShowOrderPrint($order_number, $method_id);
 	}
 
-	/**
-	 * Save updated order data to the method specific table
-	 *
-	 * @param array $_formData Form data
-	 * @return mixed, True on success, false on failures (the rest of the save-process will be
-	 * skipped!), or null when this method is not actived.
-	 * @author Oscar van Eijk
-
-	 public function plgVmOnUpdateOrderPayment(  $_formData) {
-	 return null;
-	 }
-	 */
-	/**
-	 * Save updated orderline data to the method specific table
-	 *
-	 * @param array $_formData Form data
-	 * @return mixed, True on success, false on failures (the rest of the save-process will be
-	 * skipped!), or null when this method is not actived.
-	 * @author Oscar van Eijk
-
-	 public function plgVmOnUpdateOrderLine(  $_formData) {
-	 return null;
-	 }
-	 */
-	/**
-	 * plgVmOnEditOrderLineBE
-	 * This method is fired when editing the order line details in the backend.
-	 * It can be used to add line specific package codes
-	 *
-	 * @param integer $_orderId The order ID
-	 * @param integer $_lineId
-	 * @return mixed Null for method that aren't active, text (HTML) otherwise
-	 * @author Oscar van Eijk
-
-	 public function plgVmOnEditOrderLineBE(  $_orderId, $_lineId) {
-	 return null;
-	 }
-	 */
-
-	/**
-	 * This method is fired when showing the order details in the frontend, for every orderline.
-	 * It can be used to display line specific package codes, e.g. with a link to external tracking and
-	 * tracing systems
-	 *
-	 * @param integer $_orderId The order ID
-	 * @param integer $_lineId
-	 * @return mixed Null for method that aren't active, text (HTML) otherwise
-	 * @author Oscar van Eijk
-
-	 public function plgVmOnShowOrderLineFE(  $_orderId, $_lineId) {
-	 return null;
-	 }
-	 */
 	function plgVmDeclarePluginParamsPayment($name, $id, &$data) {
 		return $this->declarePluginParams('payment', $name, $id, $data);
 	}

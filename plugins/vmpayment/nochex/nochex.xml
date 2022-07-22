@@ -1,68 +1,48 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension version="2.5" type="plugin" group="vmpayment" >
-    <name>VMPAYMENT_NOCHEX</name>
-    <creationDate>December 2019</creationDate>
+    <name>Nochex</name>
+    <creationDate>July 2022</creationDate>
     <author>Nochex LTD</author>
-    <authorUrl>http://www.nochex.com</authorUrl>
+    <authorUrl>https://www.nochex.com</authorUrl>
     <license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
-    <version>2.0.0</version>
-    <description><![CDATA[<a href="http://nochex.com" target="_blank">Nochex</a> is a popular
-	payment provider in the UK. ]]>
-    </description>
-
+    <version>3.0.0</version>
+    <description><![CDATA[<a href="http://nochex.com" target="_blank">Nochex</a> is a popular payment provider in the UK. ]]></description>
     <files>
-	<filename plugin="nochex">nochex.php</filename>
-    </files>
-	
+		<filename plugin="nochex">nochex.php</filename>
+    </files>	
     <languages>
-	<language tag="en-GB">en-GB.plg_vmpayment_nochex.ini</language>
-    </languages>
-	
+		<language tag="en-GB">en-GB.plg_vmpayment_nochex.ini</language>
+    </languages>	
 	<vmconfig>
-	<fields name="params">
-    <fieldset name="basic" addpath="/administrator/components/com_virtuemart/fields">
-	
-	<field type="spacer" default="" level="level1" />
-	<field type="spacer" default="VMPAYMENT_NOCHEX_PAYMENT_SETTINGS" level="level1" />
-	<field name="payment_logos" type="vmfiles" label="VMPAYMENT_NOCHEX_LOGOS"
-				description="VMPAYMENT_NOCHEX_LOGOS_DESC"
-             	directory="/images/stories/virtuemart/payment"
-             	default="default" hide_default="1" hide_none="1"
-             	stripext="0"  exclude="^_" />
-
-	<field type="spacer" default="" level="level1" />
-	<field type="spacer" default="VMPAYMENT_NOCHEX_PARAMS" level="level1" />
-	<field type="text" name="nochex_merchant_email"  size="50" label="VMPAYMENT_NOCHEX_EMAIL"
-              description="VMPAYMENT_NOCHEX_EMAIL_DESC" />
-	<field name="test_mode" type="radio" label="VMPAYMENT_NOCHEX_TESTMODE" description="VMPAYMENT_NOCHEX_TESTMODE_DESC" >
-	    <option value="0">COM_VIRTUEMART_NO</option>
-	    <option value="1">COM_VIRTUEMART_YES</option>
-	</field>
-	<field name="hide_billing_details" type="radio" label="VMPAYMENT_NOCHEX_HIDE_BILLING_DETAILS" description="VMPAYMENT_NOCHEX_HIDE_BILLING_DETAILS_DESC" >
-	    <option value="0">COM_VIRTUEMART_NO</option>
-	    <option value="1">COM_VIRTUEMART_YES</option>
-	</field>	
-	<field name="debug" type="radio" label="VMPAYMENT_NOCHEX_DEBUG" description="VMPAYMENT_NOCHEX_DEBUG_DESC" >
-	    <option value="0">COM_VIRTUEMART_NO</option>
-	    <option value="1">COM_VIRTUEMART_YES</option>
-	</field>
-	<field name="postage" type="radio" label="VMPAYMENT_NOCHEX_POSTAGE" description="VMPAYMENT_NOCHEX_POSTAGE_DESC" >
-	    <option value="0">COM_VIRTUEMART_NO</option>
-	    <option value="1">COM_VIRTUEMART_YES</option>
-	</field>
-	<field name="xmlCollection" type="radio" label="VMPAYMENT_NOCHEX_XMLCOLLECTION" description="VMPAYMENT_NOCHEX_XMLCOLLECTION_DESC" >
-	    <option value="0">COM_VIRTUEMART_NO</option>
-	    <option value="1">COM_VIRTUEMART_YES</option>
-	</field>	
-	<field type="spacer" default="" level="level1" />
-	<field type="spacer" default="VMPAYMENT_NOCHEX_PAYMENT_PAGE" level="level1" />	
-	<field name="status_pending" type="vmorderstate" scope="com_virtuemart" default="P" label="VMPAYMENT_NOCHEX_STATUS_PENDING" description="VMPAYMENT_NOCHEX_STATUS_PENDING_EXPLAIN" />
-	<field name="status_success" type="vmorderstate" scope="com_virtuemart" default="C" label="VMPAYMENT_NOCHEX_STATUS_SUCCESS" description="VMPAYMENT_NOCHEX_STATUS_SUCCESS_EXPLAIN" />
-	<field name="status_canceled" type="vmorderstate" scope="com_virtuemart" default="X" label="VMPAYMENT_NOCHEX_STATUS_FAILED" description="VMPAYMENT_NOCHEX_STATUS_FAILED_EXPLAIN" />
-	<field type="spacer" default="" level="level1" />
-	
-</fieldset>
-    </fields>
-</vmconfig>
-
+		<fields name="params">
+			<fieldset name="basic" addpath="/administrator/components/com_virtuemart/fields">	
+			<field id="ncxLogo" label="VMPAYMENT_NOCHEX_LOGO"></field>
+			<field type="text" name="nochex_merchant_email" size="50" label="VMPAYMENT_NOCHEX_EMAIL" description="VMPAYMENT_NOCHEX_EMAIL_DESC" />
+			<field name="test_mode" type="radio" label="VMPAYMENT_NOCHEX_TESTMODE" description="VMPAYMENT_NOCHEX_TESTMODE_DESC" >
+				<option value="0">COM_VIRTUEMART_NO</option>
+				<option value="1">COM_VIRTUEMART_YES</option>
+			</field>
+			<field name="hide_billing_details" type="radio" label="VMPAYMENT_NOCHEX_HIDE_BILLING_DETAILS" description="VMPAYMENT_NOCHEX_HIDE_BILLING_DETAILS_DESC" >
+				<option value="0">COM_VIRTUEMART_NO</option>
+				<option value="1">COM_VIRTUEMART_YES</option>
+			</field>	
+			<field name="debug" type="radio" label="VMPAYMENT_NOCHEX_DEBUG" description="VMPAYMENT_NOCHEX_DEBUG_DESC" >
+				<option value="0">COM_VIRTUEMART_NO</option>
+				<option value="1">COM_VIRTUEMART_YES</option>
+			</field>
+			<field name="postage" type="radio" label="VMPAYMENT_NOCHEX_POSTAGE" description="VMPAYMENT_NOCHEX_POSTAGE_DESC" >
+				<option value="0">COM_VIRTUEMART_NO</option>
+				<option value="1">COM_VIRTUEMART_YES</option>
+			</field>
+			<field name="xmlCollection" type="radio" label="VMPAYMENT_NOCHEX_XMLCOLLECTION" description="VMPAYMENT_NOCHEX_XMLCOLLECTION_DESC" >
+				<option value="0">COM_VIRTUEMART_NO</option>
+				<option value="1">COM_VIRTUEMART_YES</option>
+			</field>	
+			<field name="status_pending" type="vmorderstate" scope="com_virtuemart" default="P" label="VMPAYMENT_NOCHEX_STATUS_PENDING" description="VMPAYMENT_NOCHEX_STATUS_PENDING_EXPLAIN" />
+			<field name="status_success" type="vmorderstate" scope="com_virtuemart" default="C" label="VMPAYMENT_NOCHEX_STATUS_SUCCESS" description="VMPAYMENT_NOCHEX_STATUS_SUCCESS_EXPLAIN" />
+			<field name="status_canceled" type="vmorderstate" scope="com_virtuemart" default="X" label="VMPAYMENT_NOCHEX_STATUS_FAILED" description="VMPAYMENT_NOCHEX_STATUS_FAILED_EXPLAIN" />
+			<field type="spacer" default="" level="level1" />			
+			</fieldset>
+		</fields>
+	</vmconfig>
 </extension>
