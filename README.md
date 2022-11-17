@@ -1,5 +1,6 @@
 Nochex Module for Virtuemart
 =====================
+Tested up to Virtuemart version 4.0.6
 
 Installation
 =====================
