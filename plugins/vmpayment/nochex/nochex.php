@@ -160,7 +160,7 @@ class plgVmPaymentNochex extends vmPSPlugin {
 			$delPostage = $order['details']['BT']->order_shipment;
 			$totalInPaymentCurrency = round($paymentCurrency->convertCurrencyTo($method->payment_currency, $order['details']['BT']->order_total, false), 2) - $delPostage;
 		}else{	
-			$delPostage = "";
+			$delPostage = "0";
 			$totalInPaymentCurrency = round($paymentCurrency->convertCurrencyTo($method->payment_currency, $order['details']['BT']->order_total, false), 2);
 		}
 		

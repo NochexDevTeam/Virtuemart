@@ -1,6 +1,7 @@
 Nochex Module for Virtuemart
 =====================
-Tested up to Virtuemart version 4.0.6
+
+Tested up to Virtuemart version 4.0.12
 
 Installation
 =====================
@@ -13,6 +14,10 @@ Visit our Knowledgebase for support: https://support.nochex.com/
 
 Changelog
 =====================
+
+= 3.0.1 =
+
+    + Bug fix for orders with no delivery
 
 = 3.0.0 =
 
