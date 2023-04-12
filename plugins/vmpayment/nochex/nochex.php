@@ -486,24 +486,17 @@ class plgVmPaymentNochex extends vmPSPlugin {
 	function _processAPC($nochex_data, $method) {
 	
 		$secure_post = $method->secure_post;
-		$nochex_url = "www.nochex.com";
+		$nochex_url = "secure.nochex.com";
 
 		$post_msg = http_build_query($nochex_data);
 		// post back to Nochex system to validate
-		$header = "POST /apcnet/apc.aspx HTTP/1.0\r\n";
-		$header .= "Host: www.nochex.com\r\n";
+		$header = "POST /apc/apc.aspx HTTP/1.0\r\n";
+		$header .= "Host: secure.nochex.com\r\n";
 		$header .= "Content-Type: application/x-www-form-urlencoded\r\n";
 		$header .= "Content-Length: " . strlen($post_msg) . "\r\n\r\n";
 
-		if ($secure_post) {
-			// If possible, securely post back to Nochex using HTTPS
-			// Your PHP server will need to be SSL enabled
-			$fps = fsockopen('ssl://' . $nochex_url, 443, $errno, $errstr, 30);
-		} else {
-			$fps = fsockopen($nochex_url, 80, $errno, $errstr, 30);
-		}
-
-
+		$fps = fsockopen('ssl://' . $nochex_url, 443, $errno, $errstr, 30);
+		
 		if (!$fps) {
 			$this->sendEmailToVendorAndAdmins("error with nochex", JText::sprintf('VMPAYMENT_NOCHEX_ERROR_POSTING_APC', $errstr, $errno));
 			return JText::sprintf('VMPAYMENT_NOCHEX_ERROR_POSTING_APC', $errstr, $errno); // send email
