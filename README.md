@@ -15,6 +15,10 @@ Visit our Knowledgebase for support: https://support.nochex.com/
 Changelog
 =====================
 
+= 3.0.2 =
+
+    + Small change to APC page
+
 = 3.0.1 =
 
     + Bug fix for orders with no delivery
